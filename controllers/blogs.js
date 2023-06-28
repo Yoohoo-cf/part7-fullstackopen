@@ -32,6 +32,7 @@ blogsRouter.post('/', userExtractor, async(request, response) => {
     response.status(201).json(result)     
 })
 
+
 blogsRouter.delete('/:id', userExtractor, async(request, response) => {
     const blog = await Blog.findById(request.params.id)
    
@@ -43,20 +44,15 @@ blogsRouter.delete('/:id', userExtractor, async(request, response) => {
     } else {
         return response.status(403).json({ error: 'authorization required to delete'})
     }
+
 })
   
 
 blogsRouter.put('/:id', async(request, response) => {
-    const body = request.body
+    const { likes} = request.body
 
-    const blog = {
-        title: body.title,
-        author: body.author,
-        url: body.url,
-        likes: body.likes
-    }
-    const updatedNote = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true})
-    response.status(200).json(updatedNote)
+    const updatedBlog= await Blog.findByIdAndUpdate(request.params.id, {likes}, { new: true})
+    response.status(200).json(updatedBlog)
 })
 
 module.exports = blogsRouter
