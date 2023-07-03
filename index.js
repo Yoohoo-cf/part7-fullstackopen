@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config()
+}
+
 const app = require('./app')
 const config = require('./utils/config')
 const logger = require('./utils/logger')
