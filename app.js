@@ -3,7 +3,9 @@ const express = require('express')
 const app = express()
 const logger = require('./utils/logger')
 const mongoose = require('mongoose')
+const cors = require('cors')
 require('express-async-errors')
+
 
 const blogsRouter = require('./controllers/blogs')
 const usersRouter = require('./controllers/users')
@@ -24,6 +26,8 @@ mongoose.connect(config.MONGODB_URI)
     })
 
 app.use(express.json())
+app.use(cors())
+app.use(express.static('build'))
 app.use(middleware.requestLogger)
 
 app.use(middleware.tokenExtractor)
