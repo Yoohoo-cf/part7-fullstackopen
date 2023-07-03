@@ -3,11 +3,6 @@ require('dotenv').config()
 
 const Blog = require('./models/blog')
 
-const uri = process.env.MONGODB_URI
-
-mongoose.set('strictQuery',false)
-mongoose.connect(uri)
-
 if (process.argv.length < 3) {
     console.log('give password as argument')
     process.exit(1)
