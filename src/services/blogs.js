@@ -1,5 +1,5 @@
 import axios from 'axios'
-const baseUrl = 'https://bloglist-backend-jbza.onrender.com'
+const baseUrl = '/api/blogs'
 
 let token = null
 
