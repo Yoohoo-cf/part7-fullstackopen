@@ -12,6 +12,13 @@ const getAll = () => {
   return request.then(response => response.data)
 }
 
+const getSingle = (id) => {
+
+  const response = axios.get(`${baseUrl}/${id}`)
+  return response.data
+}
+
+
 const create = async newObject => {
   const config = {
     headers: { Authorization: token }
@@ -26,7 +33,7 @@ const update = async (id, updatedObject) => {
     headers: { Authorization: token }
   }
 
-  const response = await axios.put(`${baseUrl}/${id}`,updatedObject, config)
+  const response = await axios.put(`${baseUrl}/${id}`, updatedObject, config)
   return response.data
 }
 
@@ -35,9 +42,10 @@ const remove = async (id) => {
     headers: { Authorization: token }
   }
 
-  const response = await axios.delete(`${baseUrl}/${id}`,config)
+  const response = await axios.delete(`${baseUrl}/${id}`, config)
   return response.data
 }
 
 
-export default { getAll, create, update, remove, setToken }
+// eslint-disable-next-line import/no-anonymous-default-export
+export default { getAll, create, update, remove, setToken, getSingle }

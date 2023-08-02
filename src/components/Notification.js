@@ -1,20 +1,19 @@
-const Notification = ({ successMessage, errorMessage }) => {
-  if (successMessage) {
-    return (
-      <div className="success">
-        {successMessage}
-      </div>
-    )
-  }
-  if (errorMessage) {
-    return (
-      <div className="error">
-        {errorMessage}
-      </div>
-    )
-  }
+import { useSelector } from 'react-redux'
+import { Alert } from 'react-bootstrap'
+
+const Notification = () => {
+
+  const notification = useSelector(state => state.notification)
+
+
   return (
-    null
+    <div className='container'>
+      {(notification &&
+        <Alert variant="success">
+          {notification}
+        </Alert>
+      )}
+    </div>
   )
 }
 

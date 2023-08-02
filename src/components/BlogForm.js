@@ -1,46 +1,43 @@
-import { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { createBlog } from '../reducers/blogReducer'
+import { setNotificationTime } from '../reducers/notificationReducer'
+import store from '../store'
 
-const BlogForm = ({ createBlog }) => {
+const BlogForm = () => {
 
-  const [newBlog, setNewBlog] = useState({ title: '', author: '', url: '', user: '' })
+  const dispatch = useDispatch()
 
-
-  const handleTitleChange = (event) => {
-    setNewBlog({ ...newBlog, title:event.target.value })
-  }
-
-  const handleAuthorChange = (event) => {
-    setNewBlog({ ...newBlog, author: event.target.value })
-  }
-
-  const handleUrlChange = (event) => {
-    setNewBlog({ ...newBlog, url: event.target.value })
-  }
-
-  const addBlog = (event) => {
+  const addBlog = async (event) => {
     event.preventDefault()
+    const title = event.target.title.value
+    const author = event.target.author.value
+    const url = event.target.url.value
 
-    createBlog ({
-      title: newBlog.title,
-      author: newBlog.author,
-      url: newBlog.url,
-    })
-    setNewBlog({ title: '', author: '', url: '', user: '' })
+    event.target.title.value = ''
+    event.target.author.value = ''
+    event.target.url.value = ''
+
+    const newBlog = {
+      title,
+      author,
+      url,
+    }
+
+    dispatch(createBlog(newBlog))
+    console.log(store.getState())
+    dispatch(setNotificationTime(`A new blog ${title} by ${author}`, 10))
   }
 
   return (
-    <form onSubmit={addBlog}>
+    <div>
       <h2>create new</h2>
-      <div>
-        title: <input value={newBlog.title} id='title' onChange={handleTitleChange}
-        />
-        <div> author: <input value={newBlog.author} id='author' onChange={handleAuthorChange}/>
-        </div>
-        <div>url: <input value={newBlog.url} id='url'onChange={handleUrlChange}/>
-        </div>
-      </div>
-      <button id='create-button' type="submit">create</button>
-    </form>
+      <form onSubmit={addBlog}>
+        <div>title: <input name='title' /></div>
+        <div> author: <input name='author' /></div>
+        <div>url: <input name='url' /></div>
+        <button type="submit">create</button>
+      </form >
+    </div>
   )
 }
 

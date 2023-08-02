@@ -1,131 +1,88 @@
-import { useState, useEffect, useRef } from 'react'
-import Blog from './components/Blog'
-import blogService from './services/blogs'
-import loginService from './services/login'
 import Notification from './components/Notification'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { initializeBlogs, singleBlog } from './reducers/blogReducer'
+import Blogs from './components/Blogs'
 import BlogForm from './components/BlogForm'
-import LoginForm from './components/LoginForm'
-import Togglable from './components/Togglable'
+import Login from './components/Login'
+import {
+  Routes, Route, Link,
+  BrowserRouter as Router,
+  useParams
+} from 'react-router-dom'
+import { clearUser } from './reducers/userReducer'
+import Users from './components/Users/Users'
+import Blog from './components/Blog'
+import { Navbar, Nav } from 'react-bootstrap'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
 
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [ user, setUser] = useState(null)
+  const dispatch = useDispatch()
 
-  const [successMessage, setSuccessMessage ] = useState(null)
-  const [errorMessage, setErrorMessage] = useState(null)
+  const blogs = useSelector(state => state.blogs)
 
-  useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs(blogs.sort((a, b) => b.likes - a.likes))
-    )
-  }, [])
+  const user = useSelector(state => state.user)
+
+  const { id } = useParams()
+
 
   useEffect(() => {
-    const loggedUserJSON =
-    window.localStorage.getItem('loggedBlogappUser')
-    if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON)
-      setUser(user)
-      blogService.setToken(user.token)
-    }
-  }, [])
+    dispatch(initializeBlogs())
+  }, [dispatch])
 
-  const handleLogin = async(event) => {
-    event.preventDefault()
-
-    try {
-      const user = await loginService.login({
-        username, password
-      })
-
-      blogService.setToken(user.token)
-      window.localStorage.setItem(
-        'loggedBlogappUser', JSON.stringify(user)
-      )
-      setUser(user)
-      setUsername('')
-      setPassword('')
-    } catch(exception) {
-      setErrorMessage('Wrong username or password')
-      setTimeout(() => {
-        setErrorMessage(null)
-      }, 5000)
-    }
-  }
+  useEffect(() => {
+    dispatch(singleBlog(id))
+  }, [dispatch, id])
 
   const handleLogout = () => {
     window.localStorage.removeItem('loggedBlogappUser')
 
-    setUser(null)
-    setUsername('')
-    setPassword('')
+    dispatch(clearUser())
   }
 
-  const blogFormRef = useRef()
-
-  const addBlog = (blogObject) => {
-    blogFormRef.current.toggleVisibility()
-
-    blogService
-      .create(blogObject)
-      .then(returnedBlog => {
-
-        setBlogs(blogs.concat(returnedBlog))
-        setSuccessMessage(`A new blog ${blogObject.title} by ${blogObject.author}`)
-      })
-  }
-
-  const setDeleteOf = (id) => {
-    const blogToDelete = blogs.find((blog) => blog.id === id)
-
-    if (window.confirm(`Remove blog ${blogToDelete.title} by ${blogToDelete.author}`)){
-      blogService
-        .remove(id)
-        .then(() => {
-          setBlogs(blogs.filter((blog) => blog.id !== id))
-        })
-    }
-  }
-
-
-  if ( user === null) {
+  if (!user) {
     return (
-      <div className='login-container'>
-        <h2>Log in to bloglist website!</h2>
-        <Notification successMessage={successMessage} errorMessage={errorMessage}/>
-        <Togglable buttonLabel="log in">
-          <LoginForm
-            handleLogin={handleLogin}
-            username={username} setUsername={setUsername}
-            password={password} setPassword={setPassword}/>
-        </Togglable>
+      <div>
+        <Login />
       </div>
     )
   }
 
   return (
-    <div>
-      <h1>blogs</h1>
-      <Notification successMessage={successMessage} errorMessage={errorMessage}/>
-      <div>
-        {user.name} logged in
-        <button onClick={handleLogout}>logout</button>
+    <Router>
+      <div className='container'>
+        <h1>blogs</h1>
+        <Notification />
+        <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+          <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+          <Navbar.Collapse id="responsive-navbar-nav">
+            <Nav className="me-auto">
+              <Nav.Link href="#" as="span">
+                <Link to="/">blogs</Link>
+              </Nav.Link>
+              <Nav.Link href="#" as="span">
+                <Link to="/users">users</Link>
+              </Nav.Link>
+              <Nav.Link href="#" as="span">
+                <Link to="/create">create new</Link>
+              </Nav.Link>
+            </Nav>
+          </Navbar.Collapse>
+        </Navbar>
+
+        <Routes>
+          <Route path="/users" element={<Users />} />
+          <Route index element={<Blogs blogs={blogs} />} />
+          <Route path="/create" element={<BlogForm />} />
+          <Route path="/blogs/:id" elements={<Blog />} />
+          <Route path="/login" elements={<Login />} />
+        </Routes>
+        <div>
+          {user.name} logged in
+          <button onClick={handleLogout}>Logout</button>
+        </div>
       </div>
-      <div>
-        <Togglable buttonLabel='create new blog' ref={blogFormRef}>
-          <BlogForm createBlog={addBlog}/>
-        </Togglable>
-      </div>
-      <div className='bloglist'>
-        {blogs.map(blog =>
-          <Blog key={blog.id} blog={blog}
-            setDelete = {() => setDeleteOf(blog.id)}/>
-        )}
-      </div>
-    </div>
+    </Router>
   )
 }
 

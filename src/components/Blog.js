@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
-import blogService from '../services/blogs'
+import React from 'react'
+import { removeBlog, likeBlog } from '../reducers/blogReducer'
+import { useDispatch } from 'react-redux'
+import { Link, useParams } from 'react-router-dom'
 
-const Blog = ({ blog, setDelete }) => {
+const Blog = ({ blogs }) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -10,57 +12,38 @@ const Blog = ({ blog, setDelete }) => {
     marginBottom: 5
   }
 
-  const [detailsVisible, setDetailsVisible] = useState(false)
-  const [updatedBlog, setUpdatedBlog] = useState(blog)
+  const { id } = useParams()
 
-  const toggleDetails = () => {
-    setDetailsVisible(!detailsVisible)
-  }
+  console.log("URL ID:", id)
 
-  const handleLikes = () => {
+  const blog = blogs.find(b => b.id === Number(id))
 
-    const updatedLikes = updatedBlog.likes + 1
-
-    blogService
-      .update(blog.id,  { ...updatedBlog, likes: updatedLikes })
-      .then((returnedBlog) => {
-        setUpdatedBlog(returnedBlog)
-      })
-  }
+  const dispatch = useDispatch()
+  console.log("Found Blog:", blog)
 
   return (
     <div style={blogStyle} className='blog'>
-      <div className='main-page'>
-        {blog.title} {blog.author}
-        <button id='view' onClick={toggleDetails}>{detailsVisible? 'hide' : 'view'}</button>
-      </div>
-
-      {detailsVisible && (
-        <div className='details'>
-          <ul>
-            <li>Title: {blog.title}</li>
-            <li>Url: {blog.url}</li>
-            <li>
-              Likes: {updatedBlog.likes}
-              <button id='like' onClick={handleLikes}>like</button>
-            </li>
-
-            { blog.user && blog.user.length > 0 &&  (
-              <li>User: {blog.user[0].name}</li>
-            )}
-
-            <div className='remove'>
-              { blog.user && blog.user.length > 0 && (
-                <button onClick={setDelete} style ={{ backgroundColor: '#4285F4', color: 'white',
-                  padding: '4px 9px', border: 'none', borderRadius: '4px' }}>
-              remove
-                </button>
-              )}
-            </div>
-          </ul>
+      <div className='details'>
+        <h3>{blog.title} {blog.author}</h3>
+        <Link>{blog.url}</Link>
+        <div>
+          {blog.likes} likes
+          <button onClick={() => dispatch(likeBlog(blog.id))}>like</button>
         </div>
-      )}
+        added by {blog.user[0].name}
+        <div className='remove'>
+          {blog.user && blog.user.length > 0 && (
+            <button onClick={() => dispatch(removeBlog(blog.id))} style={{
+              backgroundColor: '#4285F4', color: 'white',
+              padding: '4px 9px', border: 'none', borderRadius: '4px'
+            }}>
+              remove
+            </button>
+          )}
+        </div>
+      </div>
     </div>
-  )}
+  )
+}
 
 export default Blog
