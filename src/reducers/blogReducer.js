@@ -16,37 +16,19 @@ const blogSlice = createSlice({
             return state.filter(blog =>
                 blog.id !== id)
         },
-        likeBlogOf(state, action) {
-            const id = action.payload
-            const blogToLike = state.find(b => b.id === id)
-            const likedBlog = {
-                ...blogToLike,
-                likes: blogToLike.likes + 1
-            }
-            return state.map(blog =>
-                blog.id !== id ? blog : likedBlog)
+        alter(state, { payload }) {
+            return state.map(s => s.id !== payload.id ? s : payload)
         },
-        setSingleBlog(state, action) {
-            const id = action.payload
-            return state.find(blog =>
-                blog.id === id)
-        }
     }
-})
+}
+)
 
-export const { appendBlog, setBlogs, setSingleBlog, deleteBlogOf, likeBlogOf } = blogSlice.actions
+export const { appendBlog, setBlogs, setSingleBlog, deleteBlogOf, alter } = blogSlice.actions
 
 export const initializeBlogs = () => {
     return async dispatch => {
         const blogs = await blogService.getAll()
         dispatch(setBlogs(blogs))
-    }
-}
-
-export const singleBlog = (id) => {
-    return async dispatch => {
-        const blog = await blogService.getSingle(id)
-        dispatch(setSingleBlog(blog))
     }
 }
 
@@ -64,10 +46,17 @@ export const removeBlog = (id) => {
     }
 }
 
-export const likeBlog = (id, updatedObject) => {
+export const updateBlog = (object) => {
     return async dispatch => {
-        await blogService.update(id)
-        dispatch(likeBlogOf(id))
+        const data = await blogService.update(object)
+        dispatch(alter(data))
+    }
+}
+
+export const commentBlog = (id, comment) => {
+    return async dispatch => {
+        const data = await blogService.comment(id, comment)
+        dispatch(alter(data))
     }
 }
 

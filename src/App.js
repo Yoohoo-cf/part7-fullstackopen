@@ -1,88 +1,74 @@
 import Notification from './components/Notification'
 import { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { initializeBlogs, singleBlog } from './reducers/blogReducer'
+import { useSelector } from 'react-redux'
 import Blogs from './components/Blogs'
 import BlogForm from './components/BlogForm'
 import Login from './components/Login'
 import {
   Routes, Route, Link,
-  BrowserRouter as Router,
-  useParams
 } from 'react-router-dom'
-import { clearUser } from './reducers/userReducer'
 import Users from './components/Users/Users'
 import Blog from './components/Blog'
-import { Navbar, Nav } from 'react-bootstrap'
+import { useNotification, useInitialization, useClearUser } from './hooks/index'
+import { SmallButton, Page, Navigation } from './components/styles'
+import User from './components/Users/User'
 
 const App = () => {
 
-  const dispatch = useDispatch()
+  const stateInitializer = useInitialization()
+  const notifyWith = useNotification()
 
-  const blogs = useSelector(state => state.blogs)
+  const clearUser = useClearUser()
 
   const user = useSelector(state => state.user)
 
-  const { id } = useParams()
-
 
   useEffect(() => {
-    dispatch(initializeBlogs())
-  }, [dispatch])
+    stateInitializer()
+  }, [])
 
-  useEffect(() => {
-    dispatch(singleBlog(id))
-  }, [dispatch, id])
-
-  const handleLogout = () => {
-    window.localStorage.removeItem('loggedBlogappUser')
-
-    dispatch(clearUser())
+  const logout = async () => {
+    clearUser()
+    notifyWith('logged out')
   }
 
   if (!user) {
     return (
       <div>
+        <Notification />
         <Login />
       </div>
     )
   }
 
-  return (
-    <Router>
-      <div className='container'>
-        <h1>blogs</h1>
-        <Notification />
-        <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
-          <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-          <Navbar.Collapse id="responsive-navbar-nav">
-            <Nav className="me-auto">
-              <Nav.Link href="#" as="span">
-                <Link to="/">blogs</Link>
-              </Nav.Link>
-              <Nav.Link href="#" as="span">
-                <Link to="/users">users</Link>
-              </Nav.Link>
-              <Nav.Link href="#" as="span">
-                <Link to="/create">create new</Link>
-              </Nav.Link>
-            </Nav>
-          </Navbar.Collapse>
-        </Navbar>
+  const padding = {
+    padding: 5
+  }
 
-        <Routes>
-          <Route path="/users" element={<Users />} />
-          <Route index element={<Blogs blogs={blogs} />} />
-          <Route path="/create" element={<BlogForm />} />
-          <Route path="/blogs/:id" elements={<Blog />} />
-          <Route path="/login" elements={<Login />} />
-        </Routes>
-        <div>
-          {user.name} logged in
-          <button onClick={handleLogout}>Logout</button>
-        </div>
-      </div>
-    </Router>
+  return (
+    <Page>
+
+      <Navigation>
+        <span><strong>Blog app</strong></span>
+        <Link style={padding} to="/blogs">blogs</Link>
+        <Link style={padding} to="/users">users</Link>
+        <Link style={padding} to="/create">create new</Link>
+        <span style={padding}>{user.name} logged in</span>
+        <span style={padding}>
+          <SmallButton onClick={logout}>logout</SmallButton>
+        </span>
+      </Navigation>
+
+      <Notification />
+
+      <Routes>
+        <Route path="/users" element={<Users />} />
+        <Route path="/users/:id" element={<User />} />
+        <Route path="/blogs" element={<Blogs />} />
+        <Route path="/create" element={<BlogForm />} />
+        <Route path="/blogs/:id" element={<Blog />} />
+      </Routes>
+    </Page>
   )
 }
 

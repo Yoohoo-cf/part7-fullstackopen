@@ -1,8 +1,10 @@
-const { useSelector } = require("react-redux")
+import { useSelector } from 'react-redux'
+import { useParams } from 'react-router-dom'
 
 
 const User = () => {
-    const user = useSelector(state => state.user)
+    const id = useParams().id
+    const user = useSelector(({ users }) => users.find(u => u.id === id))
 
     if (!user) {
         return null
@@ -14,7 +16,7 @@ const User = () => {
             <h4>added blogs</h4>
             <ul>
                 {user.blogs.map(blog =>
-                    < li key={user.id}>{blog.title}</li>
+                    < li key={blog.id}>{blog.title}</li>
                 )}
             </ul>
         </div >

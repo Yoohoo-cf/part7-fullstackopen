@@ -1,48 +1,76 @@
-import React from 'react'
-import { removeBlog, likeBlog } from '../reducers/blogReducer'
-import { useDispatch } from 'react-redux'
-import { Link, useParams } from 'react-router-dom'
+import React, { useState } from 'react'
+import { removeBlog, updateBlog, commentBlog } from '../reducers/blogReducer'
+import { useDispatch, useSelector } from 'react-redux'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useNotification } from '../hooks/index'
+import { SmallButton } from './styles'
 
-const Blog = ({ blogs }) => {
-  const blogStyle = {
-    paddingTop: 10,
-    paddingLeft: 2,
-    border: 'solid',
-    borderWidth: 1,
-    marginBottom: 5
-  }
+const Blog = () => {
 
-  const { id } = useParams()
+  const [comment, setComment] = useState('')
 
-  console.log("URL ID:", id)
+  const blogs = useSelector(state => state.blogs)
+  const id = useParams().id
+  const blog = blogs.find(u => u.id === id)
 
-  const blog = blogs.find(b => b.id === Number(id))
+  const user = useSelector(state => state.user)
 
   const dispatch = useDispatch()
-  console.log("Found Blog:", blog)
+  const notifyWith = useNotification()
+  const navigate = useNavigate()
+
+  if (!blog || !user) {
+    return null
+  }
+
+  const canRemove = blog.user.username === user.username
+
+  const remove = () => {
+    const ok = window.confirm(
+      `Are you sure you want to remove '${blog.title}' by ${blog.author}`
+    )
+    if (ok) {
+      dispatch(removeBlog(blog))
+      notifyWith(`The blog' ${blog.title}' by '${blog.author} comment`)
+      navigate('/')
+    }
+  }
+
+  const like = () => {
+    const blogToUpdate = { ...blog, likes: blog.likes + 1, user: blog.user.id }
+    dispatch(updateBlog(blogToUpdate))
+    notifyWith(`A like for the blog '${blog.title}' by '${blog.author}'`)
+  }
+
+  const addComment = () => {
+    dispatch(commentBlog(blog.id, comment))
+    notifyWith('Comment added!')
+    setComment('')
+  }
 
   return (
-    <div style={blogStyle} className='blog'>
-      <div className='details'>
-        <h3>{blog.title} {blog.author}</h3>
-        <Link>{blog.url}</Link>
-        <div>
-          {blog.likes} likes
-          <button onClick={() => dispatch(likeBlog(blog.id))}>like</button>
-        </div>
-        added by {blog.user[0].name}
-        <div className='remove'>
-          {blog.user && blog.user.length > 0 && (
-            <button onClick={() => dispatch(removeBlog(blog.id))} style={{
-              backgroundColor: '#4285F4', color: 'white',
-              padding: '4px 9px', border: 'none', borderRadius: '4px'
-            }}>
-              remove
-            </button>
-          )}
-        </div>
+    <div className='blog'>
+      <div>
+        <h3>{blog.title} by {blog.author}</h3>
       </div>
-    </div>
+
+      <div>
+        <a href={blog.url}> {blog.url}</a>{' '}
+      </div>
+      <div>
+        {blog.likes} likes
+        <button onClick={like}>like</button>
+      </div>
+      added by {blog.user && blog.user[0].name}
+      <div className='remove'>
+        {canRemove && <SmallButton onClick={remove}>delete</SmallButton>}
+
+        <h3>comments: </h3>
+
+        <input value={comment} onChange={({ target }) => setComment(target.value)} />
+        <SmallButton onClick={addComment}>add comment</SmallButton>
+      </div>
+    </div >
   )
 }
 

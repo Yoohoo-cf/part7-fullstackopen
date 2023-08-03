@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom"
 import { Table } from 'react-bootstrap'
+import { useSelector } from 'react-redux'
 
-const Blogs = ({ blogs }) => {
+const Blogs = () => {
+
+    const blogs = useSelector(state => state.blogs)
 
     const sortedBlogs = [...blogs].sort((a, b) => b.likes - a.likes)
 

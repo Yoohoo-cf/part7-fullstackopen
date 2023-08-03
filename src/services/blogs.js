@@ -28,13 +28,23 @@ const create = async newObject => {
   return response.data
 }
 
-const update = async (id, updatedObject) => {
+const update = async (object) => {
   const config = {
     headers: { Authorization: token }
   }
 
-  const response = await axios.put(`${baseUrl}/${id}`, updatedObject, config)
+  const response = await axios.put(`${baseUrl}/${object.id}`, object, config)
   return response.data
+}
+
+const comment = async (id, comment) => {
+  const config = {
+    headers: { Authorization: token }
+  }
+
+  const request = await axios.post(`${baseUrl}/${id}/comments`, comment, config)
+
+  return request.data
 }
 
 const remove = async (id) => {
@@ -48,4 +58,4 @@ const remove = async (id) => {
 
 
 // eslint-disable-next-line import/no-anonymous-default-export
-export default { getAll, create, update, remove, setToken, getSingle }
+export default { getAll, create, update, remove, setToken, getSingle, comment }
